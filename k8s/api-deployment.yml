@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: comments-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: comments-api
+  template:
+    metadata:
+      labels:
+        app: comments-api
+    spec:
+      containers:
+      - name: comments-api
+        image: comments-api
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8000
+        env:
+        - name: PORT
+          valueFrom:
+            configMapKeyRef:
+              name: api-config
+              key: PORT
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
