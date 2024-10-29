@@ -1,6 +1,8 @@
 from flask import Flask
 from flask import jsonify
 from flask import request
+from prometheus_client import Counter, Histogram, generate_latest
+import time
 
 
 app_name = 'comentarios'
@@ -9,6 +11,24 @@ app.debug = True
 
 comments = {}
 
+REQUEST_COUNT = Counter('app_requests_total', 'Total de requisições para a API', ['method', 'endpoint', 'http_status'])
+REQUEST_LATENCY = Histogram('app_request_latency_seconds', 'Latência das requisições para a API', ['endpoint'])
+
+# Middleware para coletar métricas automaticamente
+@app.before_request
+def start_timer():
+    request.start_time = time.time()
+
+@app.route('/metrics')
+def metrics():
+    return generate_latest(), 200, {'Content-Type': 'text/plain; charset=utf-8'}
+
+@app.after_request
+def record_metrics(response):
+    request_latency = time.time() - request.start_time
+    REQUEST_LATENCY.labels(endpoint=request.path).observe(request_latency)
+    REQUEST_COUNT.labels(method=request.method, endpoint=request.path, http_status=response.status_code).inc()
+    return response
 
 @app.route('/api/comment/new', methods=['POST'])
 def api_comment_new():
