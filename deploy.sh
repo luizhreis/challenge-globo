@@ -18,7 +18,7 @@ echo "Building Docker image..."
 docker build -t ${IMAGE_NAME}:${TAG} ./app/
 
 echo "Updating api-deployment.yml with new image tag..."
-sed -i "s|image: ${IMAGE_NAME}.*|image: ${IMAGE_NAME}:${TAG}|" api-deployment.yml
+sed -i "s|image: ${IMAGE_NAME}.*|image: ${IMAGE_NAME}:${TAG}|" k8s/api-deployment.yml
 
 # Commit updated image tag to k8s file. Commented out only to keep repository clean
 # echo "Committing updated api-deployment.yml to Git..."
